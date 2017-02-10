@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import plotly
-import json
 import requests
 
 saved = requests.get("https://pub.ytvwld.de/dorfleaks.json").json()

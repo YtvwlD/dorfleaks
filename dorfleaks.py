@@ -13,8 +13,6 @@ try:
 	saved_file.close()
 except FileNotFoundError:
 	pass
-except json.decoder.JSONDecodeError:
-	pass
 
 if not saved:
 	saved = dict()
