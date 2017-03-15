@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser(description="Plots various statistics about #do
 parser.add_argument("--what", type=str, choices=["per_date", "per_weekday", "per_weekday_week"], default='per_date')
 parser.add_argument("--from_url", type=str, help="path to dorfleaks-saved.json", default="https://pub.ytvwld.de/dorfleaks.json", metavar="URL")
 parser.add_argument("--from_file", type=str, help="path to dorfleaks-saved.json", default="dorfleaks-saved.json", metavar="FILE")
-parser.add_argument("--to_file", type=str, help="output filename", default="plot.html", metavar="FILE")
+parser.add_argument("--to_file", type=str, help="output filename", default="", metavar="FILE")
 parser.add_argument("--fetch_offline", help="load the data from the specified file", action="store_true")
 parser.add_argument("--plot_online", help="plot the data using plot.ly", action="store_true")
 args = parser.parse_args()
@@ -76,8 +76,10 @@ else:
 
 figure = plotly.graph_objs.Figure(data=data, layout=layout)
 
+filename = args.to_file if args.to_file else "dorfleaks_{}".format(args.what)
+
 if args.plot_online:
-    url = plotly.plotly.plot(figure, auto_open=False)
+    url = plotly.plotly.plot(figure, auto_open=False, filename=filename)
     print("Saved to {}.".format(url), file=sys.stderr)
 else:
     # If you installed python3-plotly via apt, this will fail.
@@ -85,7 +87,7 @@ else:
     if args.to_file == "-":
         print(plotly.offline.plot(figure, output_type="div"))
     else:
-        plotly.offline.plot(figure, output_type="file", filename=args.to_file, auto_open=False)
-        print("Saved to {}.".format(args.to_file), file=sys.stderr)
+        filename = plotly.offline.plot(figure, output_type="file", filename=filename, auto_open=False)
+        print("Saved to {}.".format(filename), file=sys.stderr)
 
 
