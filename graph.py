@@ -9,7 +9,7 @@ parser.add_argument("--from_url", type=str, help="path to dorfleaks-saved.json",
 parser.add_argument("--from_file", type=str, help="path to dorfleaks-saved.json", default="dorfleaks-saved.json", metavar="FILE")
 parser.add_argument("--to_file", type=str, help="output filename", default="plot.html", metavar="FILE")
 parser.add_argument("--fetch_offline", help="load the data from the specified file", action="store_true")
-parser.add_argument("--plot_online", help="plot the data using plot.ly (not supported yet)", action="store_true")
+parser.add_argument("--plot_online", help="plot the data using plot.ly", action="store_true")
 args = parser.parse_args()
 
 print("Fetching...", file=sys.stderr)
@@ -34,7 +34,8 @@ layout = plotly.graph_objs.Layout(title="tweets containing #dorfleaks per day")
 figure = plotly.graph_objs.Figure(data=data, layout=layout)
 
 if args.plot_online:
-    raise Exception("not supported yet")
+    url = plotly.plotly.plot(figure, auto_open=False)
+    print("Saved to {}.".format(url), file=sys.stderr)
 else:
     # If you installed python3-plotly via apt, this will fail.
     # Please see https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=834528.
