@@ -5,6 +5,9 @@ APP_SECRET = ""
 from twython import Twython
 import dateutil.parser
 import json
+from os import environ
+APP_KEY = environ["TWITTER_APP_KEY"] if "TWITTER_APP_KEY" in environ else APP_KEY
+APP_SECRET = environ["TWITTER_APP_SECRET"] if "TWITTER_APP_SECRET" in environ else APP_SECRET
 
 saved = None
 try:
