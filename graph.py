@@ -4,7 +4,7 @@ import argparse
 import sys
 
 parser = argparse.ArgumentParser(description="Plots various statistics about #dorfleaks")
-parser.add_argument("--what", type=str, choices=["per_date"], default='per_date')
+parser.add_argument("--what", type=str, choices=["per_date", "per_weekday"], default='per_date')
 parser.add_argument("--from_url", type=str, help="path to dorfleaks-saved.json", default="https://pub.ytvwld.de/dorfleaks.json", metavar="URL")
 parser.add_argument("--from_file", type=str, help="path to dorfleaks-saved.json", default="dorfleaks-saved.json", metavar="FILE")
 parser.add_argument("--to_file", type=str, help="output filename", default="plot.html", metavar="FILE")
@@ -26,11 +26,29 @@ else:
 
 print("Plotting...", file=sys.stderr)
 
-data = plotly.graph_objs.Data([plotly.graph_objs.Bar(
-    x = list(saved["count"].keys()),
-    y = list(saved["count"].values())
-)])
-layout = plotly.graph_objs.Layout(title="tweets containing #dorfleaks per day")
+if args.what == "per_date":
+    data = plotly.graph_objs.Data([plotly.graph_objs.Bar(
+        x = list(saved["count"].keys()),
+        y = list(saved["count"].values())
+    )])
+    layout = plotly.graph_objs.Layout(title="tweets containing #dorfleaks per date")
+elif args.what == "per_weekday":
+    import datetime
+    count = {}
+    for day in range(0, 7):
+        count[day] = 0
+    for date_iso in saved["count"].keys():
+        date = datetime.date(*map(int, date_iso.split("-"))) # Why is there no fromiso?
+        count[date.weekday()] += saved["count"][date_iso]
+    data = plotly.graph_objs.Data([plotly.graph_objs.Bar(
+        x = list(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]),
+        y = list(count.values())
+    )])
+    layout = plotly.graph_objs.Layout(title="tweets containing #dorfleaks per weekday")
+else:
+    raise Exception
+
+
 figure = plotly.graph_objs.Figure(data=data, layout=layout)
 
 if args.plot_online:
