@@ -5,7 +5,7 @@ import sys
 import datetime
 
 parser = argparse.ArgumentParser(description="Plots various statistics about #dorfleaks")
-parser.add_argument("--what", type=str, choices=["per_date", "per_weekday", "per_weekday_week"], default='per_date')
+parser.add_argument("--what", type=str, choices=["per_date", "per_weekday", "per_weekday_week", "per_user"], default='per_date')
 parser.add_argument("--from_url", type=str, help="path to dorfleaks-saved.json", default="https://pub.ytvwld.de/dorfleaks.json", metavar="URL")
 parser.add_argument("--from_file", type=str, help="path to dorfleaks-saved.json", default="dorfleaks-saved.json", metavar="FILE")
 parser.add_argument("--to_file", type=str, help="output filename", default="", metavar="FILE")
@@ -71,6 +71,12 @@ elif args.what == "per_weekday_week":
         title="tweets containing #dorfleaks per weekday in each week",
         barmode="stack"
     )
+elif args.what == "per_user":
+    data += [plotly.graph_objs.Bar(
+        x = list(saved["users"].keys()),
+        y = list(saved["users"].values())
+    )]
+    layout = plotly.graph_objs.Layout(title="tweets containing #dorfleaks per user")
 else:
     raise Exception
 
