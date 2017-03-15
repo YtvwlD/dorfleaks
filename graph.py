@@ -68,7 +68,7 @@ elif args.what == "per_weekday_week":
             name = "week #{}".format(week)
         )]
     layout = plotly.graph_objs.Layout(
-        title="tweets containung #dorfleaks per weekday in each week",
+        title="tweets containing #dorfleaks per weekday in each week",
         barmode="stack"
     )
 else:
