@@ -6,6 +6,10 @@ from twython import Twython
 import dateutil.parser
 import json
 from os import environ
+
+if APP_KEY or APP_SECRET:
+	print("[WARN]: Please set the api secrets via environment.")
+
 APP_KEY = environ["TWITTER_APP_KEY"] if "TWITTER_APP_KEY" in environ else APP_KEY
 APP_SECRET = environ["TWITTER_APP_SECRET"] if "TWITTER_APP_SECRET" in environ else APP_SECRET
 
