@@ -2,6 +2,7 @@
 import plotly
 import argparse
 import sys
+import datetime
 
 parser = argparse.ArgumentParser(description="Plots various statistics about #dorfleaks")
 parser.add_argument("--what", type=str, choices=["per_date", "per_weekday", "per_weekday_week"], default='per_date')
@@ -26,40 +27,43 @@ else:
 
 print("Plotting...", file=sys.stderr)
 
+def _date_from_iso(date_iso):
+    return datetime.date(*map(int, date_iso.split("-"))) # Why is there no fromiso?
+
+_WEEKDAYS = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+
+data = list()
+count = dict()
+
 if args.what == "per_date":
-    data = plotly.graph_objs.Data([plotly.graph_objs.Bar(
+    data += [plotly.graph_objs.Bar(
         x = list(saved["count"].keys()),
         y = list(saved["count"].values())
-    )])
+    )]
     layout = plotly.graph_objs.Layout(title="tweets containing #dorfleaks per date")
 elif args.what == "per_weekday":
-    import datetime
-    count = {}
     for day in range(0, 7):
         count[day] = 0
     for date_iso in saved["count"].keys():
-        date = datetime.date(*map(int, date_iso.split("-"))) # Why is there no fromiso?
+        date = _date_from_iso(date_iso)
         count[date.weekday()] += saved["count"][date_iso]
-    data = plotly.graph_objs.Data([plotly.graph_objs.Bar(
-        x = list(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]),
+    data += [plotly.graph_objs.Bar(
+        x = _WEEKDAYS,
         y = list(count.values())
-    )])
+    )]
     layout = plotly.graph_objs.Layout(title="tweets containing #dorfleaks per weekday")
 elif args.what == "per_weekday_week":
-    import datetime
-    count = {}
     for date_iso in saved["count"].keys():
-        date = datetime.date(*map(int, date_iso.split("-"))) # Why is there no fromiso?
+        date = _date_from_iso(date_iso)
         week = date.isocalendar()[1]
         if not week in count.keys():
             count[week] = {}
             for day in range(0, 7):
                 count[week][day] = 0
         count[week][date.weekday()] += saved["count"][date_iso]
-    data = []
     for week in count.keys():
         data += [plotly.graph_objs.Bar(
-            x = list(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]),
+            x = _WEEKDAYS,
             y = list(count[week].values()),
             name = "week #{}".format(week)
         )]
@@ -69,7 +73,6 @@ elif args.what == "per_weekday_week":
     )
 else:
     raise Exception
-
 
 figure = plotly.graph_objs.Figure(data=data, layout=layout)
 
