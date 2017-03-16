@@ -76,7 +76,15 @@ elif args.what == "per_user":
         x = list(saved["users"].keys()),
         y = list(saved["users"].values())
     )]
-    layout = plotly.graph_objs.Layout(title="tweets containing #dorfleaks per user")
+    layout = plotly.graph_objs.Layout(
+        title="tweets containing #dorfleaks per user",
+        xaxis=plotly.graph_objs.XAxis(
+            type="category",
+            categoryorder="category ascending"
+            # "value ascending" would be nice, but it isn't implemented in plotly, yet.
+            # see https://github.com/plotly/plotly.js/blob/388287b09dd88634b9603a8599321ad73d95c352/src/plots/cartesian/layout_attributes.js#L495
+        )
+    )
 else:
     raise Exception
 
