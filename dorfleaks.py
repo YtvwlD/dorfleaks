@@ -33,7 +33,7 @@ if not "users" in saved:
 	users = dict()
 	for id in saved["ids"]:
 		try:
-			status = twitter.get(endpoint="statuses/show", params={"id": id})
+			status = twitter.show_status(id=id)
 			user = status["user"]["screen_name"]
 		except twython.exceptions.TwythonError as exc:
 			if exc.error_code == 403:
