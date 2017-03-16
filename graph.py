@@ -94,6 +94,8 @@ figure = plotly.graph_objs.Figure(data=data, layout=layout)
 filename = args.to_file if args.to_file else "dorfleaks_{}".format(args.what)
 
 if args.plot_online:
+    # You will need to login to plot.ly beforehand.
+    # Please see https://plot.ly/python/getting-started/.
     url = plotly.plotly.plot(figure, auto_open=False, filename=filename)
 else:
     # If you installed python3-plotly via apt, this will fail.
