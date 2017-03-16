@@ -11,6 +11,7 @@ parser.add_argument("--from_file", type=str, help="path to dorfleaks-saved.json"
 parser.add_argument("--to_file", type=str, help="output filename", default="", metavar="FILE")
 parser.add_argument("--fetch_offline", help="load the data from the specified file", action="store_true")
 parser.add_argument("--plot_online", help="plot the data using plot.ly", action="store_true")
+parser.add_argument("--display", help="display the graph after plotting", action="store_true")
 args = parser.parse_args()
 
 print("Fetching...", file=sys.stderr)
@@ -94,14 +95,21 @@ filename = args.to_file if args.to_file else "dorfleaks_{}".format(args.what)
 
 if args.plot_online:
     url = plotly.plotly.plot(figure, auto_open=False, filename=filename)
-    print("Saved to {}.".format(url), file=sys.stderr)
 else:
     # If you installed python3-plotly via apt, this will fail.
     # Please see https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=834528.
     if args.to_file == "-":
         print(plotly.offline.plot(figure, output_type="div"))
+        url = "-"
     else:
-        filename = plotly.offline.plot(figure, output_type="file", filename=filename, auto_open=False)
-        print("Saved to {}.".format(filename), file=sys.stderr)
+        url = plotly.offline.plot(figure, output_type="file", filename=filename, auto_open=False)
+print("Saved to {}.".format(url), file=sys.stderr)
+if args.display:
+    if args.to_file == "-":
+        print("[ERR] Can't open stdout to display the graph.", file=sys.stderr)
+    else:
+        print("Opening {}...".format(url))
+        import webbrowser
+        webbrowser.open(url)
 
 
