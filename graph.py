@@ -91,7 +91,7 @@ else:
 
 figure = plotly.graph_objs.Figure(data=data, layout=layout)
 
-filename = args.to_file if args.to_file else "dorfleaks_{}".format(args.what)
+filename = args.to_file if args.to_file else "dorfleaks_{}.html".format(args.what)
 
 if args.plot_online:
     # You will need to login to plot.ly beforehand.
