@@ -79,7 +79,7 @@ elif args.what == "per_user":
     )]
     layout = plotly.graph_objs.Layout(
         title="tweets containing #dorfleaks per user",
-        xaxis=plotly.graph_objs.XAxis(
+        xaxis=plotly.graph_objs.layout.XAxis(
             type="category",
             categoryorder="category ascending"
             # "value ascending" would be nice, but it isn't implemented in plotly, yet.
