@@ -1,0 +1,9 @@
+[Unit]
+Description=create dorfleaks.json every day
+
+[Timer]
+OnCalendar=daily
+Persistent=True
+
+[Install]
+WantedBy=timers.target

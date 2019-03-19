@@ -1,0 +1,8 @@
+[Unit]
+Description=creates dorfleaks.json and plots
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/ytvwld/dorfleaks-save
+ExecStart=/usr/bin/python3 -m pipenv run ./cron.sh
+ExecStartPost=/usr/bin/lftp -c "open sftp://extern.chaosdorf.de; cd public_html; put dorfleaks-saved.json -o dorfleaks.json; mput dorfleaks*.html"
