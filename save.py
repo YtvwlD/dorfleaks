@@ -7,6 +7,7 @@ import dateutil.parser
 import json
 from os import environ
 from sys import argv
+from collections import Counter
 
 if APP_KEY or APP_SECRET:
 	print("[WARN]: Please set the api secrets via environment.")
@@ -18,6 +19,8 @@ saved = None
 try:
 	saved_file = open("dorfleaks-saved.json", "r")
 	saved = json.load(saved_file)
+	saved["users"] = Counter(saved["users"])
+	saved["count"] = Counter(saved["count"])
 	saved_file.close()
 except FileNotFoundError:
 	pass
@@ -35,14 +38,8 @@ def save(saved, status):
 		id = status["id"]
 		user = status["user"]["screen_name"]
 		if id not in saved["ids"]:
-			if not date in saved["count"]:
-				saved["count"][date] = 1
-			else:
-				saved["count"][date] += 1
-			if not user in saved["users"]:
-				saved["users"][user] = 1
-			else:
-				saved["users"][user] += 1
+			saved["count"][date] += 1
+			saved["users"][user] += 1
 			print("Saved {} on {} by {}.".format(id, date, user))
 			saved["ids"].append(id)
 
@@ -58,7 +55,7 @@ if len(argv) == 2:
 else:
 	if not "users" in saved:
 		print("Gathering additional data about existing tweets...")
-		users = dict()
+		users = Counter()
 		for id in saved["ids"]:
 			try:
 				status = twitter.show_status(id=id)
@@ -69,10 +66,7 @@ else:
 					user = "n/a"
 				else:
 					raise
-			if not user in users:
-				users[user] = 1
-			else:
-				users[user] += 1
+			users[user] += 1
 			print("Saved {} by {}.".format(id, user))
 		saved["users"] = users # don't do this partially
 
@@ -83,6 +77,8 @@ else:
 		save(saved, status)
 		#print(status["text"], dateutil.parser.parse(status["created_at"]))
 
+saved["users"] = dict(saved["users"])
+saved["count"] = dict(saved["count"])
 saved_file = open("dorfleaks-saved.json", "w")
 json.dump(saved, saved_file)
 saved_file.close()
