@@ -4,15 +4,38 @@ import argparse
 import sys
 import datetime
 
-parser = argparse.ArgumentParser(description="Plots various statistics about #dorfleaks")
-parser.add_argument("--what", type=str, choices=["per_date", "per_weekday", "per_weekday_week", "per_user"], default='per_date')
-parser.add_argument("--from_url", type=str, help="path to dorfleaks-saved.json", default="https://pub.ytvwld.de/dorfleaks.json", metavar="URL")
-parser.add_argument("--from_file", type=str, help="path to dorfleaks-saved.json", default="dorfleaks-saved.json", metavar="FILE")
-parser.add_argument("--to_file", type=str, help="output filename", default="", metavar="FILE")
-parser.add_argument("--fetch_offline", help="load the data from the specified file", action="store_true")
-parser.add_argument("--plot_online", help="plot the data using plot.ly", action="store_true")
-parser.add_argument("--template", help="select the design to use", default="plotly")
-parser.add_argument("--display", help="display the graph after plotting", action="store_true")
+parser = argparse.ArgumentParser(
+    description="Plots various statistics about #dorfleaks"
+)
+parser.add_argument(
+    "--what", type=str,
+    choices=["per_date", "per_weekday", "per_weekday_week", "per_user"],
+    default='per_date',
+)
+parser.add_argument(
+    "--from_url", type=str, help="path to dorfleaks-saved.json",
+    default="https://pub.ytvwld.de/dorfleaks.json", metavar="URL",
+)
+parser.add_argument(
+    "--from_file", type=str, help="path to dorfleaks-saved.json",
+    default="dorfleaks-saved.json", metavar="FILE",
+)
+parser.add_argument(
+    "--to_file", type=str, help="output filename", default="", metavar="FILE",
+)
+parser.add_argument(
+    "--fetch_offline", help="load the data from the specified file",
+    action="store_true",
+)
+parser.add_argument(
+    "--plot_online", help="plot the data using plot.ly", action="store_true"
+)
+parser.add_argument(
+    "--template", help="select the design to use", default="plotly"
+)
+parser.add_argument(
+    "--display", help="display the graph after plotting", action="store_true"
+)
 args = parser.parse_args()
 
 print("Fetching...", file=sys.stderr)
@@ -29,8 +52,12 @@ else:
 
 print("Plotting...", file=sys.stderr)
 
-def _date_from_iso(date_iso):
-    return datetime.date(*map(int, date_iso.split("-"))) # Why is there no fromiso?
+
+def _date_from_iso(date_iso: str) -> datetime.date:
+    return datetime.date(
+        *map(int, date_iso.split("-"))
+    )  # fromiso only exists since 3.7
+
 
 _WEEKDAYS = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
@@ -39,8 +66,8 @@ count = dict()
 
 if args.what == "per_date":
     data += [plotly.graph_objs.Bar(
-        x = list(saved["count"].keys()),
-        y = list(saved["count"].values())
+        x=list(saved["count"].keys()),
+        y=list(saved["count"].values()),
     )]
     layout = plotly.graph_objs.Layout(
         title="tweets containing #dorfleaks per date",
@@ -53,8 +80,8 @@ elif args.what == "per_weekday":
         date = _date_from_iso(date_iso)
         count[date.weekday()] += saved["count"][date_iso]
     data += [plotly.graph_objs.Bar(
-        x = _WEEKDAYS,
-        y = list(count.values())
+        x=_WEEKDAYS,
+        y=list(count.values()),
     )]
     layout = plotly.graph_objs.Layout(
         title="tweets containing #dorfleaks per weekday",
@@ -64,16 +91,16 @@ elif args.what == "per_weekday_week":
     for date_iso in saved["count"].keys():
         date = _date_from_iso(date_iso)
         week = date.isocalendar()[1]
-        if not week in count.keys():
+        if week not in count.keys():
             count[week] = {}
             for day in range(0, 7):
                 count[week][day] = 0
         count[week][date.weekday()] += saved["count"][date_iso]
     for week in count.keys():
         data += [plotly.graph_objs.Bar(
-            x = _WEEKDAYS,
-            y = list(count[week].values()),
-            name = "week #{}".format(week)
+            x=_WEEKDAYS,
+            y=list(count[week].values()),
+            name="week #{}".format(week),
         )]
     layout = plotly.graph_objs.Layout(
         title="tweets containing #dorfleaks per weekday in each week",
@@ -82,8 +109,8 @@ elif args.what == "per_weekday_week":
     )
 elif args.what == "per_user":
     data += [plotly.graph_objs.Bar(
-        x = list(saved["users"].keys()),
-        y = list(saved["users"].values())
+        x=list(saved["users"].keys()),
+        y=list(saved["users"].values())
     )]
     layout = plotly.graph_objs.Layout(
         title="tweets containing #dorfleaks per user",
@@ -100,7 +127,9 @@ else:
 
 figure = plotly.graph_objs.Figure(data=data, layout=layout)
 
-filename = args.to_file if args.to_file else "dorfleaks_{}.html".format(args.what)
+filename = (
+    args.to_file if args.to_file else "dorfleaks_{}.html".format(args.what)
+)
 
 if args.plot_online:
     # You will need to login to plot.ly beforehand.
@@ -113,7 +142,9 @@ else:
         print(plotly.offline.plot(figure, output_type="div"))
         url = "-"
     else:
-        url = plotly.offline.plot(figure, output_type="file", filename=filename, auto_open=False)
+        url = plotly.offline.plot(
+            figure, output_type="file", filename=filename, auto_open=False
+        )
 print("Saved to {}.".format(url), file=sys.stderr)
 if args.display:
     if args.to_file == "-":
