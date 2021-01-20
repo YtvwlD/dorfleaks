@@ -6,6 +6,10 @@ More documentation will follow, but you can already view the following stuff (au
 
  * [dorfleaks.json](https://www.chaosdorf.de/~ytvwld/dorfleaks.json)
  * [dorfleaks_per_user.html](https://www.chaosdorf.de/~ytvwld/dorfleaks_per_user.html)
+ * [dorfleaks_per_user_dark.html](https://www.chaosdorf.de/~ytvwld/dorfleaks_per_user_dark.html)
  * [dorfleaks_per_date.html](https://www.chaosdorf.de/~ytvwld/dorfleaks_per_date.html)
+ * [dorfleaks_per_date_dark.html](https://www.chaosdorf.de/~ytvwld/dorfleaks_per_date_dark.html)
  * [dorfleaks_per_weekday.html](https://www.chaosdorf.de/~ytvwld/dorfleaks_per_weekday.html)
+ * [dorfleaks_per_weekday_dark.html](https://www.chaosdorf.de/~ytvwld/dorfleaks_per_weekday_dark.html)
  * [dorfleaks_per_weekday_week.html](https://www.chaosdorf.de/~ytvwld/dorfleaks_per_weekday_week.html)
+ * [dorfleaks_per_weekday_week_dark.html](https://www.chaosdorf.de/~ytvwld/dorfleaks_per_weekday_week_dark.html)
