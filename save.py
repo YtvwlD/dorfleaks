@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-APP_KEY = ""
-APP_SECRET = ""
-
 import twython
 import dateutil.parser
 import json
@@ -9,12 +6,6 @@ from os import environ
 from sys import argv
 from collections import Counter
 import typing
-
-if APP_KEY or APP_SECRET:
-    print("[WARN]: Please set the api secrets via environment.")
-
-APP_KEY = environ["TWITTER_APP_KEY"] if "TWITTER_APP_KEY" in environ else APP_KEY
-APP_SECRET = environ["TWITTER_APP_SECRET"] if "TWITTER_APP_SECRET" in environ else APP_SECRET
 
 saved = None
 try:
@@ -31,7 +22,9 @@ if not saved:
     saved["count"] = dict()
     saved["ids"] = list()
 
-twitter = twython.Twython(APP_KEY, APP_SECRET)
+twitter = twython.Twython(
+    environ["TWITTER_APP_KEY"], environ["TWITTER_APP_SECRET"],
+)
 
 
 def save(saved, status):
