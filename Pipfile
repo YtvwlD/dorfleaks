@@ -11,7 +11,7 @@ mypy = "*"
 requests = "*"
 plotly = "*"
 python-dateutil = "*"
-twython = "*"
 typing = "*"
+"mastodon.py" = "*"
 
 [requires]

@@ -66,8 +66,8 @@ count = dict()
 
 if args.what == "per_date":
     data += [plotly.graph_objs.Bar(
-        x=list(saved["count"].keys()),
-        y=list(saved["count"].values()),
+        x=list(saved["twitter"]["count"].keys()),
+        y=list(saved["twitter"]["count"].values()),
     )]
     layout = plotly.graph_objs.Layout(
         title="tweets containing #dorfleaks per date",
@@ -76,9 +76,9 @@ if args.what == "per_date":
 elif args.what == "per_weekday":
     for day in range(0, 7):
         count[day] = 0
-    for date_iso in saved["count"].keys():
+    for date_iso in saved["twitter"]["count"].keys():
         date = _date_from_iso(date_iso)
-        count[date.weekday()] += saved["count"][date_iso]
+        count[date.weekday()] += saved["twitter"]["count"][date_iso]
     data += [plotly.graph_objs.Bar(
         x=_WEEKDAYS,
         y=list(count.values()),
@@ -88,14 +88,14 @@ elif args.what == "per_weekday":
         template=args.template,
     )
 elif args.what == "per_weekday_week":
-    for date_iso in saved["count"].keys():
+    for date_iso in saved["twitter"]["count"].keys():
         date = _date_from_iso(date_iso)
         week = date.isocalendar()[1]
         if week not in count.keys():
             count[week] = {}
             for day in range(0, 7):
                 count[week][day] = 0
-        count[week][date.weekday()] += saved["count"][date_iso]
+        count[week][date.weekday()] += saved["twitter"]["count"][date_iso]
     for week in count.keys():
         data += [plotly.graph_objs.Bar(
             x=_WEEKDAYS,
@@ -109,8 +109,8 @@ elif args.what == "per_weekday_week":
     )
 elif args.what == "per_user":
     data += [plotly.graph_objs.Bar(
-        x=list(saved["users"].keys()),
-        y=list(saved["users"].values())
+        x=list(saved["twitter"]["users"].keys()),
+        y=list(saved["twitter"]["users"].values())
     )]
     layout = plotly.graph_objs.Layout(
         title="tweets containing #dorfleaks per user",

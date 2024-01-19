@@ -1,31 +1,58 @@
 #!/usr/bin/env python3
-import twython
+from __future__ import annotations
+from dataclasses import dataclass
+from datetime import datetime
 import dateutil.parser
 import json
 from os import environ
 from sys import argv
 from collections import Counter
+from mastodon import Mastodon
 import typing
 
+@dataclass
+class Toot:
+    id: str
+    author: str
+    content: str
+    timestamp: datetime
+
+    @classmethod
+    def from_api(cls, toot) -> Self:
+        return cls(
+            toot.uri,
+            toot.account.uri,
+            toot.content,
+            toot.created_at,
+        )
+
+    @classmethod
+    def from_json(cls, toot: dict[str, object]) -> Self:
+        toot["timestamp"] = datetime.fromisoformat(toot["timestamp"])
+        return cls(**toot)
+
+    def to_json(self) -> dict[str, object]:
+        d = self.__dict__.copy()
+        d["timestamp"] = self.timestamp.isoformat()
+        return d
+
+
+# deserialize
 saved = None
 try:
-    saved_file = open("dorfleaks-saved.json", "r")
-    saved = json.load(saved_file)
-    saved["users"] = Counter(saved["users"])
-    saved["count"] = Counter(saved["count"])
-    saved_file.close()
+    with open("dorfleaks-saved.json", "r") as saved_file:
+        saved = json.load(saved_file)
+        saved["toots"] = {
+            id: Toot.from_json(toot)
+            for (id, toot) in saved.get("toots", {}).items()
+        }
 except FileNotFoundError:
     pass
 
 if not saved:
     saved = dict()
-    saved["count"] = dict()
-    saved["ids"] = list()
 
-twitter = twython.Twython(
-    environ["TWITTER_APP_KEY"], environ["TWITTER_APP_SECRET"],
-)
-
+mastodon = Mastodon(api_base_url="https://chaos.social/")
 
 def save(saved, status):
     if not status["retweeted"] and not status["text"].startswith("RT @"):
@@ -40,46 +67,33 @@ def save(saved, status):
 
 
 if len(argv) == 2:
-    try:
-        id = int(argv[-1])
-    except ValueError:
-        id = int(argv[-1].split("/")[-1])
-    print("Saving the specified tweet: {}".format(id))
-    status = twitter.show_status(id=id)
+    id = argv[-1]
+    print("Saving the specified toot: {}".format(id))
+    raise NotImplementedError()
     save(saved, status)
 
 else:
-    if "users" not in saved:
-        print("Gathering additional data about existing tweets...")
-        users = Counter()  # type: typing.Counter[str]
-        for id in saved["ids"]:
-            try:
-                status = twitter.show_status(id=id)
-                user = status["user"]["screen_name"]
-            except twython.exceptions.TwythonError as exc:
-                if exc.error_code == 403:
-                    print(
-                        "The user who posted {} is no longer publicly visible."
-                        .format(id)
-                    )
-                    user = "n/a"
-                else:
-                    raise
-            users[user] += 1
-            print("Saved {} by {}.".format(id, user))
-        saved["users"] = users  # don't do this partially
+    # move all twitter data
+    if "twitter" not in saved.keys():
+        saved = {"twitter": saved}
+    
+    # the actual logic:
+    # get all toots with this hashtag
+    # remove all non-relevant data
+    toots = map(Toot.from_api, mastodon.timeline_hashtag("dorfleaks"))
+    # merge with existing data
+    saved["toots"] = saved.get("toots", {})
+    for toot in toots:
+        if toot.id not in saved["toots"].keys():
+            print(f"Adding {toot}...")
+            saved["toots"][toot.id] = toot
 
-    dorfleaks = twitter.search(
-        q='#dorfleaks', count=1024, result_type="recent"
-    )["statuses"]
-
-    for status in dorfleaks:
-        # print(status.keys())
-        save(saved, status)
+    for toot in saved["toots"]:
+        pass
+        # save(saved, toot)
         # print(status["text"], dateutil.parser.parse(status["created_at"]))
 
-saved["users"] = dict(saved["users"])
-saved["count"] = dict(saved["count"])
-saved_file = open("dorfleaks-saved.json", "w")
-json.dump(saved, saved_file)
-saved_file.close()
+# serialize
+saved["toots"] = {id: toot.to_json() for (id, toot) in saved["toots"].items()}
+with open("dorfleaks-saved.json", "w") as saved_file:
+    json.dump(saved, saved_file)
