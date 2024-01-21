@@ -54,23 +54,10 @@ if not saved:
 
 mastodon = Mastodon(api_base_url="https://chaos.social/")
 
-def save(saved, status):
-    if not status["retweeted"] and not status["text"].startswith("RT @"):
-        date = str(dateutil.parser.parse(status["created_at"]).date())
-        id = status["id"]
-        user = status["user"]["screen_name"]
-        if id not in saved["ids"]:
-            saved["count"][date] += 1
-            saved["users"][user] += 1
-            print("Saved {} on {} by {}.".format(id, date, user))
-            saved["ids"].append(id)
-
-
 if len(argv) == 2:
     id = argv[-1]
     print("Saving the specified toot: {}".format(id))
     raise NotImplementedError()
-    save(saved, status)
 
 else:
     # move all twitter data
@@ -85,13 +72,8 @@ else:
     saved["toots"] = saved.get("toots", {})
     for toot in toots:
         if toot.id not in saved["toots"].keys():
-            print(f"Adding {toot}...")
+            print(f"Saving {toot.id}...")
             saved["toots"][toot.id] = toot
-
-    for toot in saved["toots"]:
-        pass
-        # save(saved, toot)
-        # print(status["text"], dateutil.parser.parse(status["created_at"]))
 
 # serialize
 saved["toots"] = {id: toot.to_json() for (id, toot) in saved["toots"].items()}
