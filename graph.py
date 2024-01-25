@@ -14,7 +14,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--from_url", type=str, help="path to dorfleaks-saved.json",
-    default="https://pub.ytvwld.de/dorfleaks.json", metavar="URL",
+    default="https://chaosdorf.de/~ytvwld/dorfleaks.json", metavar="URL",
 )
 parser.add_argument(
     "--from_file", type=str, help="path to dorfleaks-saved.json",
@@ -53,12 +53,6 @@ else:
 print("Plotting...", file=sys.stderr)
 
 
-def _date_from_iso(date_iso: str) -> datetime.date:
-    return datetime.date(
-        *map(int, date_iso.split("-"))
-    )  # fromiso only exists since 3.7
-
-
 _WEEKDAYS = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
 data = list()
@@ -77,7 +71,7 @@ elif args.what == "per_weekday":
     for day in range(0, 7):
         count[day] = 0
     for date_iso in saved["twitter"]["count"].keys():
-        date = _date_from_iso(date_iso)
+        date = datetime.datetime.fromisoformat(date_iso)
         count[date.weekday()] += saved["twitter"]["count"][date_iso]
     data += [plotly.graph_objs.Bar(
         x=_WEEKDAYS,
@@ -89,7 +83,7 @@ elif args.what == "per_weekday":
     )
 elif args.what == "per_weekday_week":
     for date_iso in saved["twitter"]["count"].keys():
-        date = _date_from_iso(date_iso)
+        date = datetime.datetime.fromisoformat(date_iso)
         week = date.isocalendar()[1]
         if week not in count.keys():
             count[week] = {}
