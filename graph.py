@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
+from collections import defaultdict
 import plotly
 import argparse
 import sys
 import datetime
+
+from save import deserialize
 
 parser = argparse.ArgumentParser(
     description="Plots various statistics about #dorfleaks"
 )
 parser.add_argument(
     "--what", type=str,
-    choices=["per_date", "per_weekday", "per_weekday_week", "per_user"],
+    choices=["per_date", "per_hour", "per_weekday", "per_weekday_week", "per_user"],
     default='per_date',
 )
 parser.add_argument(
@@ -50,61 +53,82 @@ else:
     else:
         saved = json.load(open(args.from_file, "rt"))
 
+saved = deserialize(saved)
+
 print("Plotting...", file=sys.stderr)
 
 
 _WEEKDAYS = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
 data = list()
-count = dict()
 
 if args.what == "per_date":
+    count: dict[str, int] = defaultdict(lambda: 0)
+    for toot in saved["toots"].values():
+        date = toot.timestamp.date().isoformat()
+        count[date] += 1
     data += [plotly.graph_objs.Bar(
-        x=list(saved["twitter"]["count"].keys()),
-        y=list(saved["twitter"]["count"].values()),
+        x=list(count.keys()),
+        y=list(count.values()),
     )]
     layout = plotly.graph_objs.Layout(
-        title="tweets containing #dorfleaks per date",
+        title="toots containing #dorfleaks per date",
+        template=args.template,
+    )
+elif args.what == "per_hour":
+    count: dict[int, int] = defaultdict(lambda: 0)
+    for toot in saved["toots"].values():
+        hour = toot.timestamp.time().hour
+        count[hour] += 1
+    data += [plotly.graph_objs.Bar(
+        x=list(count.keys()),
+        y=list(count.values()),
+    )]
+    layout = plotly.graph_objs.Layout(
+        title="toots containing #dorfleaks per hour",
         template=args.template,
     )
 elif args.what == "per_weekday":
+    count: dict[int, int] = dict()
     for day in range(0, 7):
         count[day] = 0
-    for date_iso in saved["twitter"]["count"].keys():
-        date = datetime.datetime.fromisoformat(date_iso)
-        count[date.weekday()] += saved["twitter"]["count"][date_iso]
+    for toot in saved["toots"].values():
+        count[toot.timestamp.weekday()] += 1
     data += [plotly.graph_objs.Bar(
         x=_WEEKDAYS,
         y=list(count.values()),
     )]
     layout = plotly.graph_objs.Layout(
-        title="tweets containing #dorfleaks per weekday",
+        title="toots containing #dorfleaks per weekday",
         template=args.template,
     )
 elif args.what == "per_weekday_week":
-    for date_iso in saved["twitter"]["count"].keys():
-        date = datetime.datetime.fromisoformat(date_iso)
-        week = date.isocalendar()[1]
-        if week not in count.keys():
-            count[week] = {}
-            for day in range(0, 7):
-                count[week][day] = 0
-        count[week][date.weekday()] += saved["twitter"]["count"][date_iso]
-    for week in count.keys():
+    count: dict[str, dict[int, int]] = defaultdict(lambda: {
+        day: 0
+        for day in range(0, 7)
+    })
+    for toot in saved["toots"].values():
+        week = toot.timestamp.date().isocalendar().week
+        weekday = toot.timestamp.date().weekday()
+        count[week][weekday] += 1
+    for week, days in count.items():
         data += [plotly.graph_objs.Bar(
             x=_WEEKDAYS,
-            y=list(count[week].values()),
+            y=list(days.values()),
             name="week #{}".format(week),
         )]
     layout = plotly.graph_objs.Layout(
-        title="tweets containing #dorfleaks per weekday in each week",
+        title="toots containing #dorfleaks per weekday in each week",
         barmode="stack",
         template=args.template,
     )
 elif args.what == "per_user":
+    count = defaultdict(lambda: 0)
+    for toot in saved["toots"].values():
+        count[toot.author] += 1
     data += [plotly.graph_objs.Bar(
-        x=list(saved["twitter"]["users"].keys()),
-        y=list(saved["twitter"]["users"].values())
+        x=list(count.keys()),
+        y=list(count.values())
     )]
     layout = plotly.graph_objs.Layout(
         title="tweets containing #dorfleaks per user",
