@@ -10,6 +10,11 @@ from collections import Counter
 from mastodon import Mastodon
 import typing
 
+def acct_to_webfinger(acct: str) -> str:
+    if "@" in acct:
+        return acct
+    return f"{acct}@chaos.social"
+
 @dataclass
 class Toot:
     id: str
@@ -21,7 +26,7 @@ class Toot:
     def from_api(cls, toot) -> Self:
         return cls(
             toot.uri,
-            toot.account.uri,
+            acct_to_webfinger(toot.account.acct),
             toot.content,
             toot.created_at,
         )
