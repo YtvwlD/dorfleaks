@@ -52,12 +52,26 @@ except FileNotFoundError:
 if not saved:
     saved = dict()
 
-mastodon = Mastodon(api_base_url="https://chaos.social/")
+# fetching individual statuses requires authentication
+mastodon = Mastodon(
+    api_base_url="https://chaos.social/",
+    client_id=environ.get("MASTODON_CLIENT_ID"),
+    client_secret=environ.get("MASTODON_CLIENT_SECRET"),
+    access_token=environ.get("MASTODON_ACCESS_TOKEN"),
+)
+mastodon.app_verify_credentials()
+
+def save(saved, toot):
+    if toot.id not in saved["toots"].keys():
+            print(f"Saving {toot.id}...")
+            saved["toots"][toot.id] = toot
+
 
 if len(argv) == 2:
     id = argv[-1]
-    print("Saving the specified toot: {}".format(id))
-    raise NotImplementedError()
+    results = mastodon.search_v2(id, resolve=True, result_type="statuses", exclude_unreviewed=False)
+    result, = results["statuses"]
+    save(saved, Toot.from_api(result))
 
 else:
     # move all twitter data
@@ -71,9 +85,7 @@ else:
     # merge with existing data
     saved["toots"] = saved.get("toots", {})
     for toot in toots:
-        if toot.id not in saved["toots"].keys():
-            print(f"Saving {toot.id}...")
-            saved["toots"][toot.id] = toot
+        save(saved, toot)
 
 # serialize
 saved["toots"] = {id: toot.to_json() for (id, toot) in saved["toots"].items()}
