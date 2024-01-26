@@ -1,6 +1,6 @@
 #!/bin/sh
 ./save.py || exit 1
-for WHAT in per_date per_weekday per_weekday_week per_user
+for WHAT in per_date per_hour per_weekday per_weekday_week per_user
 do
     for TEMPLATE in '' _dark
     do
